@@ -1,0 +1,115 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pathlib import Path
+PROJECT_ROOT = Path(r'e:/Data analytics project/job-market-analytics')
+PROCESSED_DIR = PROJECT_ROOT / 'data' / 'processed'
+SCREENSHOTS_DIR = PROJECT_ROOT / 'screenshots'
+SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+sns.set_style('whitegrid')
+def create_charts():
+    df_jobs = pd.read_csv(PROCESSED_DIR / 'jobs_cleaned.csv')
+    df_skills = pd.read_csv(PROCESSED_DIR / 'job_skills.csv')
+    
+    plt.figure(figsize=(12, 6))
+    top_skills = df_skills['skill'].value_counts().head(15)
+    sns.barplot(x=top_skills.values, y=top_skills.index, palette='Blues_d')
+    plt.title('Top 15 Skills')
+    plt.xlabel('Count')
+    plt.ylabel('Skill')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'top_skills.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    sns.barplot(data=df_jobs, x='role_category', y='salary_avg', errorbar=None)
+    plt.title('Average Salary by Role Category')
+    plt.xlabel('Role Category')
+    plt.ylabel('Average Salary (Lakhs PA)')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'salary_by_role.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    top_cities = df_jobs['city'].value_counts().head(10)
+    sns.barplot(x=top_cities.index, y=top_cities.values)
+    plt.title('Top 10 Cities by Listing Count')
+    plt.xlabel('City')
+    plt.ylabel('Listing Count')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'top_cities.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    top_companies = df_jobs['company'].value_counts().head(15)
+    sns.barplot(x=top_companies.values, y=top_companies.index)
+    plt.title('Top 15 Companies')
+    plt.xlabel('Listing Count')
+    plt.ylabel('Company')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'top_companies.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    sal_data = df_jobs.dropna(subset=['salary_avg'])
+    sns.boxplot(data=sal_data, x='role_category', y='salary_avg')
+    plt.title('Salary Distribution by Role Category')
+    plt.xlabel('Role Category')
+    plt.ylabel('Salary (Lakhs PA)')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'salary_distribution.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    job_types = df_jobs['job_type'].value_counts()
+    plt.pie(job_types.values, labels=job_types.index, autopct='%1.1f%%', startangle=90)
+    plt.title('Job Type Split: Internship vs Full-Time')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'job_type_split.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    top_6_cities = df_jobs['city'].value_counts().head(6).index
+    city_sal_data = df_jobs[df_jobs['city'].isin(top_6_cities)].dropna(subset=['salary_avg'])
+    sns.boxplot(data=city_sal_data, x='city', y='salary_avg')
+    plt.title('Salary Distribution for Top 6 Cities')
+    plt.xlabel('City')
+    plt.ylabel('Salary (Lakhs PA)')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'salary_by_city.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    exp_data = df_jobs.dropna(subset=['experience_min'])
+    sns.histplot(data=exp_data, x='experience_min', bins=20)
+    plt.title('Distribution of Minimum Experience Required')
+    plt.xlabel('Minimum Experience (Years)')
+    plt.ylabel('Count')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'experience_distribution.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(10, 8))
+    top_8_skills = df_skills['skill'].value_counts().head(8).index
+    merged_df = pd.merge(df_jobs[['job_id', 'role_category']], df_skills, on='job_id')
+    filtered_merged = merged_df[merged_df['skill'].isin(top_8_skills)]
+    heatmap_data = pd.crosstab(filtered_merged['role_category'], filtered_merged['skill'])
+    sns.heatmap(heatmap_data, annot=True, fmt='d', cmap='YlGnBu')
+    plt.title('Top 8 Skills x Role Categories')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'skills_heatmap.png', dpi=150)
+    plt.close()
+    
+    plt.figure(figsize=(12, 6))
+    top_5_cities = df_jobs['city'].value_counts().head(5).index
+    comp_data = df_jobs[df_jobs['city'].isin(top_5_cities)].dropna(subset=['salary_avg'])
+    sns.barplot(data=comp_data, x='city', y='salary_avg', hue='job_type', errorbar=None)
+    plt.title('Average Salary by Job Type for Top 5 Cities')
+    plt.xlabel('City')
+    plt.ylabel('Average Salary (Lakhs PA)')
+    plt.tight_layout()
+    plt.savefig(SCREENSHOTS_DIR / 'salary_comparison.png', dpi=150)
+    plt.close()
+if __name__ == '__main__':
+    create_charts()
